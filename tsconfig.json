@@ -18,7 +18,6 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
       "@lib": ["./lib/index"],
       "@styles/*": ["./styles/*"],
       "@ui/*": ["./components/ui/*"],
