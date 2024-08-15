@@ -3,6 +3,7 @@ import "@styles/globals.css";
 import { cn } from "@lib";
 import type { Metadata } from "next";
 import { Navbar } from "@components";
+import { Toaster } from "@ui/toaster";
 import { Inter } from "next/font/google";
 import { Separator } from "@ui/separator";
 import { ClerkProvider, ThemeProvider } from "@providers";
@@ -31,10 +32,12 @@ export default function RootLayout({
             <div className="flex h-[100svh] flex-col w-[100svw] items-center dark:bg-black overflow-hidden">
               <Navbar />
               <Separator />
-              <main className="flex flex-1 h-full w-full justify-center items-center dark:bg-neutral-900 overflow-x-hidden overflow-y-auto">
+              <main className="flex h-full w-full justify-center items-center dark:bg-neutral-900 overflow-x-hidden overflow-y-auto">
                 {children}
               </main>
             </div>
+
+            <Toaster />
           </ClerkProvider>
         </ThemeProvider>
       </body>

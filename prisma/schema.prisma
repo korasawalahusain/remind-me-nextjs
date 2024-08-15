@@ -12,9 +12,23 @@ model Collection {
   name   String
   userId String
   color  String
+  tasks  Task[]
 
   createdAt DateTime @default(now())
 
   @@unique([userId, name])
   @@index([userId, name])
+}
+
+model Task {
+  id      Int     @id @default(autoincrement())
+  content String
+  userId  String
+  done    Boolean @default(false)
+
+  collectionId Int
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
 }

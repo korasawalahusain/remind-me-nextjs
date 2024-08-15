@@ -19,8 +19,11 @@
     ],
     "paths": {
       "@lib": ["./lib/index"],
+      "@types": ["./types/index"],
       "@styles/*": ["./styles/*"],
       "@ui/*": ["./components/ui/*"],
+      "@actions": ["./actions/index"],
+      "@schemas": ["./schemas/index"],
       "@providers": ["./providers/index"],
       "@components": ["./components/index"]
     }
