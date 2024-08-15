@@ -12,6 +12,9 @@ export default function Provider({ children }: PropsWithChildren<Props>) {
 
   return (
     <ClerkProvider
+      afterSignOutUrl="/sign-in"
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
       appearance={{
         ...((theme === "dark" ||
           (theme === "system" && systemTheme === "dark")) && {
