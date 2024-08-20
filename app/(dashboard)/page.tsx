@@ -1,30 +1,52 @@
 import {
-  CollectionCard,
   WelcomeMessage,
+  CollectionCard,
   CreateCollectionButton,
 } from "@components";
+import { fetch } from "@lib";
 import { Suspense } from "react";
 import { getCollections } from "@actions";
+import { currentUser } from "@clerk/nextjs/server";
 import { Alert, AlertDescription, AlertTitle } from "@ui/alert";
 
-export default function Home() {
+const fetchCollections = fetch(getCollections, ["getCollections"], {
+  tags: ["getCollections"],
+});
+
+export default async function Home() {
+  const user = await currentUser();
+  if (!user) return null;
+
   return (
-    <>
+    <div className="flex flex-col space-y-5">
       <WelcomeMessage />
-      <CollectionsListWrapper />
-    </>
+      <NoCollectionsAlertWrapper userId={user.id} />
+      <CreateCollectionButton />
+      <CollectionsListWrapper userId={user.id} />
+    </div>
   );
 }
 
-function CollectionsListWrapper() {
+function NoCollectionsAlertWrapper({ userId }: { userId: string }) {
   return (
-    <Suspense fallback={<h1>loading collections...</h1>}>
-      <CollectionsList />
+    <Suspense>
+      <NoCollectionsAlert userId={userId} />
     </Suspense>
   );
 }
 
-function NoCollectionsAlert() {
+async function NoCollectionsAlert({ userId }: { userId: string }) {
+  const response = await fetchCollections({
+    where: {
+      userId,
+    },
+    include: {
+      tasks: true,
+    },
+  });
+
+  if (!response.success || response.collections.length > 0) return null;
+
   return (
     <Alert>
       <svg
@@ -48,32 +70,32 @@ function NoCollectionsAlert() {
   );
 }
 
-async function CollectionsList() {
-  const response = await getCollections({
+function CollectionsListWrapper({ userId }: { userId: string }) {
+  return (
+    <Suspense fallback={<h1>loading collections...</h1>}>
+      <CollectionsList userId={userId} />
+    </Suspense>
+  );
+}
+
+async function CollectionsList({ userId }: { userId: string }) {
+  const response = await fetchCollections({
+    where: {
+      userId,
+    },
     include: {
       tasks: true,
     },
   });
 
   if (!response.success) return null;
-
-  if (response.collections.length === 0) {
-    return (
-      <div className="flex flex-col gap-5">
-        <NoCollectionsAlert />
-        <CreateCollectionButton />
-      </div>
-    );
-  }
+  if (response.collections.length === 0) return null;
 
   return (
-    <>
-      <CreateCollectionButton />
-      <div className="flex flex-col w-full gap-4 mt-6">
-        {response.collections.map((collection, index) => (
-          <CollectionCard key={index} collection={collection} />
-        ))}
-      </div>
-    </>
+    <div className="flex flex-col w-full gap-4">
+      {response.collections.map((collection, index) => (
+        <CollectionCard key={index} collection={collection} />
+      ))}
+    </div>
   );
 }

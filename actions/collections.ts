@@ -2,6 +2,7 @@
 
 import { prisma } from "@lib";
 import { Prisma } from "@prisma/client";
+import { revalidateTag } from "next/cache";
 import { ActionOutput, Collection } from "@types";
 import { currentUser } from "@clerk/nextjs/server";
 import { createCollectionSchema, CreateCollectionSchemaType } from "@schemas";
@@ -50,6 +51,8 @@ export async function createCollection({
       select,
     });
 
+    revalidateTag("getCollections");
+
     return {
       success: true,
       message: {
@@ -89,27 +92,15 @@ export type GetCollectionsOutput = {
 };
 
 export async function getCollections(
-  input: Prisma.CollectionFindManyArgs
+  input: Prisma.CollectionFindManyArgs = {}
 ): Promise<ActionOutput<GetCollectionsOutput>> {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return {
-        success: false,
-        errors: [
-          {
-            title: "Error",
-            description: "Please login to continue!",
-          },
-        ],
-      };
-    }
+    console.log("Called....");
 
     const collections = await prisma.collection.findMany({
       ...input,
       where: {
-        ...input.where,
-        userId: user.id,
+        ...(input.where ?? {}),
       },
     });
 
@@ -164,6 +155,8 @@ export async function deleteCollection({
         userId: user.id,
       },
     });
+
+    revalidateTag("getCollections");
 
     return {
       success: true,

@@ -4,7 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 
 export default function WelcomeMessage() {
   return (
-    <div className="flex w-full mb-12">
+    <div className="flex w-full mb-6">
       <h1 className="text-4xl font-bold">
         Welcome <br />
         <Suspense fallback={<UserNameFallback />}>
