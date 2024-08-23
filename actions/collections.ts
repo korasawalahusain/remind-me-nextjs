@@ -95,8 +95,6 @@ export async function getCollections(
   input: Prisma.CollectionFindManyArgs = {}
 ): Promise<ActionOutput<GetCollectionsOutput>> {
   try {
-    console.log("Called....");
-
     const collections = await prisma.collection.findMany({
       ...input,
       where: {
