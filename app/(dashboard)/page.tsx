@@ -1,52 +1,30 @@
 import {
-  WelcomeMessage,
   CollectionCard,
+  WelcomeMessage,
   CreateCollectionButton,
 } from "@components";
-import { fetch } from "@lib";
 import { Suspense } from "react";
 import { getCollections } from "@actions";
-import { currentUser } from "@clerk/nextjs/server";
 import { Alert, AlertDescription, AlertTitle } from "@ui/alert";
 
-const fetchCollections = fetch(getCollections, ["getCollections"], {
-  tags: ["getCollections"],
-});
-
-export default async function Home() {
-  const user = await currentUser();
-  if (!user) return null;
-
+export default function Home() {
   return (
-    <div className="flex flex-col space-y-5">
+    <>
       <WelcomeMessage />
-      <NoCollectionsAlertWrapper userId={user.id} />
-      <CreateCollectionButton />
-      <CollectionsListWrapper userId={user.id} />
-    </div>
+      <CollectionsListWrapper />
+    </>
   );
 }
 
-function NoCollectionsAlertWrapper({ userId }: { userId: string }) {
+function CollectionsListWrapper() {
   return (
-    <Suspense>
-      <NoCollectionsAlert userId={userId} />
+    <Suspense fallback={<h1>loading collections...</h1>}>
+      <CollectionsList />
     </Suspense>
   );
 }
 
-async function NoCollectionsAlert({ userId }: { userId: string }) {
-  const response = await fetchCollections({
-    where: {
-      userId,
-    },
-    include: {
-      tasks: true,
-    },
-  });
-
-  if (!response.success || response.collections.length > 0) return null;
-
+function NoCollectionsAlert() {
   return (
     <Alert>
       <svg
@@ -70,32 +48,32 @@ async function NoCollectionsAlert({ userId }: { userId: string }) {
   );
 }
 
-function CollectionsListWrapper({ userId }: { userId: string }) {
-  return (
-    <Suspense fallback={<h1>loading collections...</h1>}>
-      <CollectionsList userId={userId} />
-    </Suspense>
-  );
-}
-
-async function CollectionsList({ userId }: { userId: string }) {
-  const response = await fetchCollections({
-    where: {
-      userId,
-    },
+async function CollectionsList() {
+  const response = await getCollections({
     include: {
       tasks: true,
     },
   });
 
   if (!response.success) return null;
-  if (response.collections.length === 0) return null;
+
+  if (response.collections.length === 0) {
+    return (
+      <div className="flex flex-col gap-5">
+        <NoCollectionsAlert />
+        <CreateCollectionButton />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col w-full gap-4">
-      {response.collections.map((collection, index) => (
-        <CollectionCard key={index} collection={collection} />
-      ))}
-    </div>
+    <>
+      <CreateCollectionButton />
+      <div className="flex flex-col w-full gap-4 mt-6">
+        {response.collections.map((collection, index) => (
+          <CollectionCard key={index} collection={collection} />
+        ))}
+      </div>
+    </>
   );
 }
